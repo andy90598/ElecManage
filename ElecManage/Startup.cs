@@ -40,6 +40,7 @@ namespace ElecManage
             options.UseSqlite(Configuration.GetConnectionString("ElecDB"))
             );
             services.AddHttpClient();
+            services.AddHostedService<Worker>();
 
         }
 

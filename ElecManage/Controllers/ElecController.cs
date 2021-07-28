@@ -58,15 +58,13 @@ namespace ElecManage.Controllers
 
 
 
-        //[HttpGet("kWh")]
-        //public IActionResult kWh()
-        //{
-        //    var msg = "";
-        //    using (_elecDBContext)
-        //    {
-        //        _elecDBContext.
-        //        return (Ok(msg));
-        //    }
-        //}
+        [HttpGet("kWh")]
+        public IActionResult kWh()
+        {
+            var db = _elecDBContext.Electricities;
+            IActionResult msg =NotFound("0");
+            
+            return Ok(msg);
+        }
     }
 }
