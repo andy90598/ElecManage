@@ -1,3 +1,4 @@
+using ElecManage.Hubs;
 using ElecManage.Models;
 using ElecManage.Services;
 using Microsoft.AspNetCore.Builder;
@@ -31,13 +32,34 @@ namespace ElecManage
         {
             services.AddTransient<IHttpClient, HttpClient>();
             services.AddControllers();
+            services.AddCors(o => o.AddPolicy("CorsPolicy", builder => {
+                builder
+                    .WithOrigins( "http://localhost", "http://localhost:4200")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();                   
+            }));
+
+
+            services.AddSignalR(option =>
+            {
+                //開啟或關閉SignalR詳細錯誤訊息
+                option.EnableDetailedErrors = true;
+            });
+
+            services.AddSignalR().AddJsonProtocol(options =>
+            {
+                //取消預設的camelCase模式，不然前端binding會有錯
+                options.PayloadSerializerOptions.PropertyNamingPolicy = null;
+            });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ElecManage", Version = "v1" });
             });
             //Scaffold-DbContext "Data Source=./ElecDB.db" Microsoft.EntityFrameworkCore.Sqlite -OutputDir Models -Force
             services.AddDbContext<ElecDBContext>(options =>
-            options.UseSqlite(Configuration.GetConnectionString("ElecDB"))
+                options.UseSqlite(Configuration.GetConnectionString("ElecDB"))
             );
             services.AddHttpClient();
             services.AddHostedService<Worker>();
@@ -60,9 +82,12 @@ namespace ElecManage
 
             app.UseAuthorization();
 
+            app.UseCors("CorsPolicy");
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<BroadcastHub>("dashboard");
             });
         }
     }
